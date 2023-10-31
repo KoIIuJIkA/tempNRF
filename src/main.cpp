@@ -12,12 +12,14 @@ int main() {
         using StringView = sw::redis::StringView;
         auto redis = RedisInterface("tcp://127.0.0.1:6379");
 
-        std::ifstream f("data_model.json");
+        std::ifstream f("../data/data_model.json");
         json data = json::parse(f);
+
+        std::cout << std::setw(4) << data.dump(4);
 
         redis.create("key_data", data.dump(4));
 
-        redis.find("config_file.json");
+        redis.find("../data/config_file.json");
 
 
 

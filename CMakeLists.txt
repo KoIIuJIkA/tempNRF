@@ -19,17 +19,20 @@ add_executable(
 
 target_include_directories(${PROJECT_NAME} 
 PUBLIC
-    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/include
 PRIVATE
-    ${PROJECT_BINARY_DIR}/src
+    ${PROJECT_BINARY_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 find_package(hiredis REQUIRED)
 find_package(redis++ REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
-    hiredis
-    redis++
+    PRIVATE
+        nlohmann_json::nlohmann_json
+        hiredis::hiredis
+        redis++::redis++
 )

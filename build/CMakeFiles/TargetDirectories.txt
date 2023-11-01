@@ -1,3 +1,0 @@
-/Users/georgryabov/Desktop/wtf/tempNRF/build/CMakeFiles/redis_benchmark.dir
-/Users/georgryabov/Desktop/wtf/tempNRF/build/CMakeFiles/edit_cache.dir
-/Users/georgryabov/Desktop/wtf/tempNRF/build/CMakeFiles/rebuild_cache.dir

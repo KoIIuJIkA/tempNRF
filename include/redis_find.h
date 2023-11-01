@@ -33,16 +33,24 @@ public:
     // del method.
     long long del(const StringView &key);
 
+    // benchmark test prototype.
     std::vector<std::vector<json>> benchmark(const char* nfinstance_path,
                                              const char* config_path);
 
+    // used to determine the entry of config file in nfinstance.
+    // if some config file has entered the nfprofile.
+    // then the key with the following nfsinstance will be output.
     std::vector<OptionalString> find(const char* config_path);
 
+    // shows whether config file is included with keys and values in nfprofile.
     std::vector<json> findJ2J(json nfinstance, json config_file);
 
+    // shows whether json config file is included with keys and values 
+    // in json nfprofile.
     std::vector<json> findP2P(const char* nfinstance_path, 
                               const char* config_path);
 
+    // the same as the previous one, only we pass it by path.
     void find_code(json& config_file, 
                    json& profile, 
                    std::vector<json> &match_nfprofiles);

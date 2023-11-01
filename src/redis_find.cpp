@@ -21,9 +21,9 @@ using OptionalString = sw::redis::OptionalString;
  ** \brief Represents a interface and search interactions in the redis database.
  */
 
-//===------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
 // CRUD redefined from the redis++ library.
-//===------------------------------------------------------------------===//
+//===----------------------------------------------------------------------===//
 
 // set method.
 bool RedisInterface::create(const StringView &key, const StringView &val) {
@@ -40,8 +40,7 @@ long long RedisInterface::del(const StringView &key) {
     return Redis::del(key);
 }                      
 
-//parse + accept??
-
+// benchmark test prototype.
 std::vector<std::vector<json>> RedisInterface::benchmark(
                                                const char* nfinstance_path,
                                                const char* config_path) {
@@ -59,6 +58,9 @@ std::vector<std::vector<json>> RedisInterface::benchmark(
     return benchmark_profiles;
 }
 
+// used to determine the entry of config file in nfinstance.
+// if some config file has entered the nfprofile.
+// then the key with the following nfsinstance will be output.
 std::vector<OptionalString> RedisInterface::find(const char* config_path) {
     std::vector<OptionalString> match_keys;
 
@@ -68,7 +70,7 @@ std::vector<OptionalString> RedisInterface::find(const char* config_path) {
     std::vector<OptionalString> keys;
     (*this).keys("*", std::back_inserter(keys));
     for (const auto& key : keys) {
-        json profile =  json::parse(*((*this).get(*key)));
+        json profile = json::parse(*((*this).get(*key)));
         std::vector<json> match_nfprofiles = 
                                         (*this).findJ2J(profile, config_file);
         if (match_nfprofiles.size())
@@ -76,7 +78,7 @@ std::vector<OptionalString> RedisInterface::find(const char* config_path) {
     }
     return match_keys;
 }
-
+// shows whether config file is included with keys and values in nfprofile.
 void RedisInterface::find_code(json& config_file, 
                 json& profile, 
                 std::vector<json> &match_nfprofiles) {
@@ -92,21 +94,25 @@ void RedisInterface::find_code(json& config_file,
     }
 }
 
+// shows whether json config file is included with keys and values 
+// in json nfprofile.
 std::vector<json> RedisInterface::findJ2J(json nfinstance, json config_file) {
     std::vector<json> match_nfprofiles;    
 
     // !!manually var. 90 is the keys in the nfprofile.
-    if (nfinstance.begin().value().size() == 90) {
+    if (nfinstance.begin().value().size() == 90) {       // for nfinstance.
         for (auto& profile : nfinstance) {
             find_code(config_file, profile, match_nfprofiles);
         }
-    } else {
+    } else {                                             // for nfprofile.
         find_code(config_file, nfinstance, match_nfprofiles);
     }
     
     return match_nfprofiles;
 }  
 
+
+// the same as the previous one, only we pass it by path.
 std::vector<json> RedisInterface::findP2P(const char* nfinstance_path,
                                           const char* config_path) {
     std::vector<json> match_nfprofiles;

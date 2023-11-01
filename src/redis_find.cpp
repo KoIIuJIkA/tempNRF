@@ -50,11 +50,11 @@ std::vector<std::vector<json>> RedisInterface::benchmark(
     std::ifstream f(nfinstance_path);
     json nfinstance = json::parse(f);
 
-    std::ifstream cf(config_path);     // json config file.
+    std::ifstream cf(config_path);
     json config_arr_file = json::parse(cf);  
 
     for (auto& config : config_arr_file) {
-        benchmark_profiles.push_back((*this).find(nfinstance, config));
+        benchmark_profiles.push_back((*this).findJ2J(nfinstance, config));
     }
     return benchmark_profiles;
 }
@@ -70,7 +70,7 @@ std::vector<OptionalString> RedisInterface::find(const char* config_path) {
     for (const auto& key : keys) {
         json profile =  json::parse(*((*this).get(*key)));
         std::vector<json> match_nfprofiles = 
-                                        (*this).find(profile, config_file);
+                                        (*this).findJ2J(profile, config_file);
         if (match_nfprofiles.size())
             match_keys.push_back(key);
     }
@@ -89,14 +89,12 @@ void RedisInterface::find_code(json& config_file,
     }
     if (flag) {
         match_nfprofiles.push_back(profile);
-        std::cout << "\nArr-TRUE\n";
-    } else {
-        std::cout << "arr-FALSE\n";
     }
 }
 
-std::vector<json> RedisInterface::find(json nfinstance, json config_file) {
+std::vector<json> RedisInterface::findJ2J(json nfinstance, json config_file) {
     std::vector<json> match_nfprofiles;    
+
     // !!manually var. 90 is the keys in the nfprofile.
     if (nfinstance.begin().value().size() == 90) {
         for (auto& profile : nfinstance) {
@@ -105,19 +103,20 @@ std::vector<json> RedisInterface::find(json nfinstance, json config_file) {
     } else {
         find_code(config_file, nfinstance, match_nfprofiles);
     }
-
+    
     return match_nfprofiles;
 }  
 
-std::vector<json> RedisInterface::find(const char* nfinstance_path,
-                        const char* config_path) {
+std::vector<json> RedisInterface::findP2P(const char* nfinstance_path,
+                                          const char* config_path) {
     std::vector<json> match_nfprofiles;
 
     std::ifstream f(nfinstance_path);
     std::ifstream cf(config_path); 
 
     json nfinstance = json::parse(f);
-    json config_file = json::parse(cf);       
+    json config_file = json::parse(cf);    
+
     // !!manually var. 90 is the keys in the nfprofile.
     if (nfinstance.begin().value().size() == 90) {
         for (auto& profile : nfinstance) {

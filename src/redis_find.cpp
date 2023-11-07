@@ -38,52 +38,45 @@ OptionalString RedisInterface::read(const StringView &key) {
 // del method.
 long long RedisInterface::del(const StringView &key) {                     
     return Redis::del(key);
-}                      
-
-// benchmark test prototype.
-std::vector<std::vector<json>> RedisInterface::benchmark(
-                                               const char* nfinstance_path,
-                                               const char* config_path) {
-    std::vector<std::vector<json>> benchmark_profiles;
-
-    std::ifstream f(nfinstance_path);
-    json nfinstance = json::parse(f);
-
-    std::ifstream cf(config_path);
-    json config_arr_file = json::parse(cf);  
-
-    for (auto& config : config_arr_file) {
-        benchmark_profiles.push_back((*this).findJ2J(nfinstance, config));
-    }
-    return benchmark_profiles;
 }
 
-// used to determine the entry of config file in nfinstance.
-// if some config file has entered the nfprofile.
-// then the key with the following nfsinstance will be output.
-std::vector<OptionalString> RedisInterface::find(const char* config_path) {
+// return the keys by search pattern.
+std::vector<OptionalString> RedisInterface::find(
+                                            const std::string nfTypeSearch) {
     std::vector<OptionalString> match_keys;
-
-    std::ifstream cf(config_path); 
-    json config_file = json::parse(cf);  
-
     std::vector<OptionalString> keys;
+
     (*this).keys("*", std::back_inserter(keys));
-    for (const auto& key : keys) {
-        json profile = json::parse(*((*this).get(*key)));
-        std::vector<json> match_nfprofiles = 
-                                        (*this).findJ2J(profile, config_file);
-        if (match_nfprofiles.size())
+    for (const auto& key : keys) {        
+        if ((*this).hget(*key, "nfType") == nfTypeSearch)
             match_keys.push_back(key);
     }
+
     return match_keys;
 }
+
+// loading data bate from the json by the json path.
+void RedisInterface::loadingDB(const char* config_path) {
+
+    std::ifstream cf(config_path); 
+    json instances = json::parse(cf);  
+
+    for (auto& profile : instances) {      
+        std::string nfInstanceId = profile["nfInstanceId"];
+        std::string nfType = profile["nfType"];
+        (*this).hset(nfInstanceId, "nfType", nfType);
+        (*this).hset(nfInstanceId, "data", profile.dump(4));
+    }
+}
+
+/// last code.
+
 // shows whether config file is included with keys and values in nfprofile.
 void RedisInterface::find_code(json& config_file, 
                 json& profile, 
                 std::vector<json> &match_nfprofiles) {
     bool flag = true;
-    for (auto& el : config_file.items()) {      
+    for (auto& el : config_file.items()) {    
         if (flag *= profile.contains(el.key()))
             flag *= profile[el.key()] == config_file[el.key()];
         if (!flag)

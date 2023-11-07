@@ -1,6 +1,6 @@
 //===----------------------------------------------------------------------===//
 
-#include "../include/redis_find.h" // im a superman.
+#include "../include/redis_find.h" 
 
 using json = nlohmann::json;
 using Redis = sw::redis::Redis;
@@ -12,17 +12,18 @@ int main() {
     try {
         auto redis = RedisInterface("tcp://127.0.0.1:6379");
 
-        std::ifstream f("../data/data_model.json");
+        auto v = redis.find("NRF");
 
-        if (f.is_open()) {
-            json data = json::parse(f);
-
-            redis.create("key_data", data.dump(4));
-
-            redis.find("../data/config_file.json");
-            std::cout << "Hello, World!";
-            // redis.delete("key_data");
+        for (const auto& i : v) {
+            std::cout << *i << " ";
+            auto str = redis.hget(*i, "data");
+            // std::cout << *str;
+            // json profile = json::parse(*str);
+            // std::cout << std::setw(4) << profile.flatten() << "\n\n";
         }
+
+        redis.loadingDB("../data/data_model.json");
+        // redis.flushdb();
 
     } catch (const std::exception& e) {
         std::cerr << "Ошибка: " << e.what() << std::endl;

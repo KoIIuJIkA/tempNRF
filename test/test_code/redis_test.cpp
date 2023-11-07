@@ -17,6 +17,32 @@ using OptionalString = sw::redis::OptionalString;
 using json = nlohmann::json;
 
 const std::string path_dir = "/Users/georgryabov/Desktop/wtf/tempNRF/test/";
+
+// loadingDB.
+TEST(FUNCTION, loadingDB) {
+    auto redis = RedisInterface("tcp://127.0.0.1:6379");
+    std::string path = path_dir + "test_code/data/data_base.json";
+    const char *cstr = path.c_str();
+    redis.loadingDB(cstr);
+    EXPECT_EQ(*redis.hget("string_TEST", "nfType") == "NRF_TEST", true);
+}
+
+TEST(FUNCTION, find) {
+    auto redis = RedisInterface("tcp://127.0.0.1:6379");
+    redis.flushdb();
+
+    std::string path = path_dir + "test_code/data/data_base.json";
+    const char *cstr = path.c_str();
+    redis.loadingDB(cstr);
+
+    std::vector<OptionalString> match_keys = redis.find("NRF_TEST");
+
+    for (const auto& key : match_keys) {
+        EXPECT_EQ("string_TEST" == *key, true);
+    }
+    redis.flushdb();
+}
+
 // find_code, expected true. test 1/3.
 TEST(FUNCTION, find_code_true) {
     auto redis = RedisInterface("tcp://127.0.0.1:6379");
@@ -129,19 +155,4 @@ TEST(FUNCTION, findJ2J_1) {
         std::cout << "can not find the files\n";
         EXPECT_EQ(false, true); 
     }
-}
-
-// find.
-TEST(FUNCTION, find) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
-    std::vector<OptionalString> match_keys;
-
-    std::ifstream f(path_dir + "test_code/data/nfinstance.json");
-    json data = json::parse(f);
-
-    redis.create("key_data", data.dump(4));
-
-    match_keys = redis.find("/Users/georgryabov/Desktop/wtf/tempNRF/test/test_code/data/config_file_test.json");
-
-    EXPECT_EQ(*(match_keys[0]) == "key_data", true);
 }

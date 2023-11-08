@@ -18,34 +18,33 @@ using json = nlohmann::json;
 
 const std::string path_dir = "/Users/georgryabov/Desktop/wtf/tempNRF/test/";
 
+auto redis = std::make_unique<RedisInterface>("tcp://127.0.0.1:6379");
+
 // loadingDB.
 TEST(FUNCTION, loadingDB) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
     std::string path = path_dir + "test_code/data/data_base.json";
     const char *cstr = path.c_str();
-    redis.loadingDB(cstr);
-    EXPECT_EQ(*redis.hget("string_TEST", "nfType") == "NRF_TEST", true);
+    redis->loadingDB(cstr);
+    EXPECT_EQ(*(redis->hget("string_TEST", "nfType")) == "NRF_TEST", true);
 }
 
 TEST(FUNCTION, find) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
-    redis.flushdb();
+    redis->flushdb();
 
     std::string path = path_dir + "test_code/data/data_base.json";
     const char *cstr = path.c_str();
-    redis.loadingDB(cstr);
+    redis->loadingDB(cstr);
 
-    std::vector<OptionalString> match_keys = redis.find("NRF_TEST");
+    std::vector<OptionalString> match_keys = redis->find("NRF_TEST");
 
     for (const auto& key : match_keys) {
         EXPECT_EQ("string_TEST" == *key, true);
     }
-    redis.flushdb();
+    redis->flushdb();
 }
 
 // find_code, expected true. test 1/3.
 TEST(FUNCTION, find_code_true) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
     std::ifstream cf(path_dir + "test_code/data/config_file_test.json");
     std::ifstream pr(path_dir + "test_code/data/1profile.json");
     
@@ -57,7 +56,7 @@ TEST(FUNCTION, find_code_true) {
     if (cf.is_open() && pr.is_open()) {
         config = json::parse(cf);
         profile = json::parse(pr);
-        redis.find_code(config, profile, match_nfprofile);
+        redis->find_code(config, profile, match_nfprofile);
         EXPECT_EQ((match_nfprofile[0].dump() == profile.dump()), true);
     } else {
         std::cout << "can not find the files\n";
@@ -67,8 +66,6 @@ TEST(FUNCTION, find_code_true) {
 
 // find_code, expected false (wrong key). test 2/3
 TEST(FUNCTION, find_code_false_key) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
-
     std::ifstream cf(path_dir + "test_code/data/config_file_test.json");
     std::ifstream pr(path_dir + "test_code/data/1profile_wrong_key.json");
     
@@ -80,7 +77,7 @@ TEST(FUNCTION, find_code_false_key) {
     if (cf.is_open() && pr.is_open()) {
         config = json::parse(cf);
         profile = json::parse(pr);
-        redis.find_code(config, profile, match_nfprofile);
+        redis->find_code(config, profile, match_nfprofile);
         EXPECT_EQ(match_nfprofile.empty(), true);
     } else {
         std::cout << "can not find the files\n";
@@ -90,8 +87,6 @@ TEST(FUNCTION, find_code_false_key) {
 
 // find_code, expected false (wrong value). test 3/3
 TEST(FUNCTION, find_code_false_value) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
-
     std::ifstream cf(path_dir + "test_code/data/config_file_test.json");
     std::ifstream pr(path_dir + "test_code/data/1profile_wrong_value.json");
     
@@ -103,7 +98,7 @@ TEST(FUNCTION, find_code_false_value) {
     if (cf.is_open() && pr.is_open()) {
         config = json::parse(cf);
         profile = json::parse(pr);
-        redis.find_code(config, profile, match_nfprofile);
+        redis->find_code(config, profile, match_nfprofile);
         EXPECT_EQ(match_nfprofile.empty(), true);
     } else {
         std::cout << "can not find the files\n";
@@ -113,8 +108,6 @@ TEST(FUNCTION, find_code_false_value) {
 
 // findJ2J, expected suitable nfprofiles. test 1/2
 TEST(FUNCTION, findJ2J) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
-
     std::ifstream cf(path_dir + "test_code/data/config_file_test.json");
     std::ifstream inc(path_dir + "test_code/data/nfinstance.json");
     
@@ -126,7 +119,7 @@ TEST(FUNCTION, findJ2J) {
     if (cf.is_open() && inc.is_open()) {
         config = json::parse(cf);
         nfinstace = json::parse(inc);
-        match_nfprofiles = redis.findJ2J(nfinstace, config);
+        match_nfprofiles = redis->findJ2J(nfinstace, config);
         EXPECT_EQ(match_nfprofiles.size() == 2, true);       // <-
     } else {
         std::cout << "can not find the files\n";
@@ -136,8 +129,6 @@ TEST(FUNCTION, findJ2J) {
 
 // findJ2J, expected suitable nfprofiles. test 2/2
 TEST(FUNCTION, findJ2J_1) {
-    auto redis = RedisInterface("tcp://127.0.0.1:6379");
-
     std::ifstream cf(path_dir + "test_code/data/config_file_test.json");
     std::ifstream inc(path_dir + "test_code/data/2nfinstance.json");
     
@@ -149,7 +140,7 @@ TEST(FUNCTION, findJ2J_1) {
     if (cf.is_open() && inc.is_open()) {
         config = json::parse(cf);
         nfinstace = json::parse(inc);
-        match_nfprofiles = redis.findJ2J(nfinstace, config);
+        match_nfprofiles = redis->findJ2J(nfinstace, config);
         EXPECT_EQ(match_nfprofiles.size() == 1, true);          // <-
     } else {
         std::cout << "can not find the files\n";
